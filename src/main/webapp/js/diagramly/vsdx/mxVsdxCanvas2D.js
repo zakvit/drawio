@@ -238,14 +238,14 @@ mxVsdxCanvas2D.prototype.rect = function(x, y, w, h)
 	h = h * s.scale;
 
 	var geo = this.xmGeo;
-	x = ((x - geo.x + s.dx) * s.scale) /w;
-	y = ((geo.height - y + geo.y - s.dy) * s.scale) /h;
-
-	this.geoSec.appendChild(this.createRowRel("RelMoveTo", this.geoStepIndex++, x, y));
-	this.geoSec.appendChild(this.createRowRel("RelLineTo", this.geoStepIndex++, x + 1, y));
-	this.geoSec.appendChild(this.createRowRel("RelLineTo", this.geoStepIndex++, x + 1, y - 1));
-	this.geoSec.appendChild(this.createRowRel("RelLineTo", this.geoStepIndex++, x, y - 1));
-	this.geoSec.appendChild(this.createRowRel("RelLineTo", this.geoStepIndex++, x, y));	
+	x = ((x - geo.x + s.dx) * s.scale);
+	y = ((geo.height - y + geo.y - s.dy) * s.scale);
+	
+	this.geoSec.appendChild(this.createRowScaled("MoveTo", this.geoStepIndex++, x, y));
+	this.geoSec.appendChild(this.createRowScaled("LineTo", this.geoStepIndex++, x + w, y));
+	this.geoSec.appendChild(this.createRowScaled("LineTo", this.geoStepIndex++, x + w, y - h));
+	this.geoSec.appendChild(this.createRowScaled("LineTo", this.geoStepIndex++, x, y - h));
+	this.geoSec.appendChild(this.createRowScaled("LineTo", this.geoStepIndex++, x, y));
 };
 
 /**
@@ -699,8 +699,7 @@ mxVsdxCanvas2D.prototype.image = function(x, y, w, h, src, aspect, flipH, flipV)
  * Function: text
  * 
  * Paints the given text. Possible values for format are empty string for
- * plain text and html for HTML markup. Background and border color as well
- * as clipping is not available in plain text labels for VML. HTML labels
+ * plain text and html for HTML markup. HTML labels
  * are not available as part of shapes with no foreignObject support in SVG
  * (eg. IE9, IE10).
  * 
@@ -734,8 +733,8 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 		if (w == 0 && h == 0)
 		{
 			var strSize = mxUtils.getSizeForString(str, that.cellState.style["fontSize"], that.cellState.style["fontFamily"]);
-			w = strSize.width * 1.2;
-			h = strSize.height * 1.2;
+			w = strSize.width * 2;
+			h = strSize.height * 2;
 		}
 		
 		//TODO support HTML text formatting and remaining attributes
@@ -752,7 +751,7 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 			if (this.html2txtDiv == null)
 				this.html2txtDiv = document.createElement('div');
 			
-			this.html2txtDiv.innerHTML = str;
+			this.html2txtDiv.innerHTML = Graph.sanitizeHtml(str);
 			str = mxUtils.extractTextWithWhitespace(this.html2txtDiv.childNodes);
     	}
 		
@@ -877,7 +876,9 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 			pStyle = pStyle || {};
 			for (var i=0; i<ch.length; i++) 
 			{
-				if (ch[i].nodeType == 3) 
+				var curCh = ch[i];
+				
+				if (curCh.nodeType == 3) 
 				{ //#text
 					var fontStyle = that.cellState.style["fontStyle"];
 					var styleMap = {
@@ -890,14 +891,22 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 						underline: pStyle['underline'] || (fontStyle & 4)
 					};
 					
+					var brNext = false;
+					
+					if (i + 1 < ch.length && ch[i + 1].nodeName.toUpperCase() == 'BR')
+					{
+						brNext = true;
+						i++;
+					}
+					
 					//VSDX doesn't have numbered list!
-					createTextRow(styleMap, charSect, pSect, text, (pStyle['OL']? pStyle['LiIndex'] + '. ' : '') + ch[i].textContent);
+					createTextRow(styleMap, charSect, pSect, text, (pStyle['OL']? pStyle['LiIndex'] + '. ' : '') + curCh.textContent + (brNext? '\n' : ''));
 				} 
-				else if (ch[i].nodeType == 1) 
+				else if (curCh.nodeType == 1) 
 				{ //element
-					var nodeName = ch[i].nodeName.toUpperCase();
-					var chLen = ch[i].childNodes.length;
-					var style = window.getComputedStyle(ch[i], null);
+					var nodeName = curCh.nodeName.toUpperCase();
+					var chLen = curCh.childNodes.length;
+					var style = window.getComputedStyle(curCh, null);
 					var styleMap = {
 						bold: style.getPropertyValue('font-weight') == 'bold' || pStyle['bold'],
 						italic: style.getPropertyValue('font-style') == 'italic' || pStyle['italic'],
@@ -936,7 +945,7 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 					
 					if (chLen > 0)
 					{
-						processNodeChildren(ch[i].childNodes, styleMap);
+						processNodeChildren(curCh.childNodes, styleMap);
 						
 						//Close the UL by adding another pp with no Vullets
 						if (nodeName == "UL")
@@ -957,7 +966,7 @@ mxVsdxCanvas2D.prototype.text = function(x, y, w, h, str, align, valign, wrap, f
 					else
 					{
 						//VSDX doesn't have numbered list!
-						createTextRow(styleMap, charSect, pSect, text, (pStyle['OL']? pStyle['LiIndex'] + '. ' : '') + ch[i].textContent);
+						createTextRow(styleMap, charSect, pSect, text, (pStyle['OL']? pStyle['LiIndex'] + '. ' : '') + curCh.textContent);
 					}
 				}
 			}

@@ -6,6 +6,10 @@ html body.geEditor div.mxPopupMenu {
 	background:#2a2a2a;
 	box-shadow:none;
 }
+html .geSidebarContainer button {
+	border: 1px solid #505759;
+	border-radius: 3px;
+}
 html body.geEditor div.mxPopupMenu hr {
 	background-color:#505759;
 }
@@ -13,10 +17,13 @@ html body .geTabContainer {
 	border-top:1px solid #505759;
 	background-color:#2a2a2a;
 }
-html body .geMenubarContainer .geItem:active {
+html body .geMenubarContainer .geItem:active, html .geSidebarContainer button:active {
 	opacity: 0.7;
 }
-html body .geFooterContainer, html body #geFooterItem1, html body textarea, html body .mxWindowTitle, html body .geDialogTitle, html body .geDialogFooter, select {
+html body, html body .geFooterContainer, html body #geFooterItem1, html body textarea,
+	html body .mxWindowTitle, html body .geDialogTitle, html body .geDialogFooter, select,
+	html .geEditor div.mxTooltip, html .geHint
+{
 	background:#2a2a2a;
 	color:#cccccc;
 }
@@ -24,11 +31,15 @@ html body a {
 	color:#337ab7;
 }
 html body div.mxRubberband {
-	border:1px dashed #ffffff !important; background:#505759 !important;
+	border:1px dashed #ffffff !important;
+	background:#505759 !important;
+}
+html body .geTemplate {
+	color:#000000;
 }
 html body .geToolbarContainer, html body .geSidebar, html body .geSidebarContainer .geTitle, html body input,
 html body textarea, html body button, html body .geColorBtn, html body .geBaseButton, html body .geSidebarTooltip,
-html body .geBaseButton {
+html body .geBaseButton, html .geSidebarContainer button {
 	background:#2a2a2a;
 	border-color:#505759;
 	box-shadow:none;
@@ -102,7 +113,8 @@ html body tr.mxPopupMenuItemHover {
 	color:#cccccc;
 }
 html body .geSidebarContainer .geTitle:hover, html body .geSidebarContainer .geItem:hover,
-html body .geMenubarContainer .geItem:hover, html body .geBaseButton:hover {
+html body .geMenubarContainer .geItem:hover, html body .geBaseButton:hover,
+html .geSidebarContainer button:hover {
 	background:#000000;
 }
 html body .geToolbarContainer .geSeparator {
@@ -114,7 +126,7 @@ html body .geHsplit, html body .geVsplit, html body table.mxPopupMenu hr {
 }
 html body .geToolbarContainer .geButton:hover, html body .geToolbarContainer .geButton:active,
 html body .geToolbarContainer .geLabel:hover, html body .geToolbarContainer .geLabel:active,
-html body .geHsplit:hover, html body .geVsplit:hover {
+html body .geHsplit:hover, html body .geVsplit:hover, html .geSidebarContainer button:active {
 	background-color:#000;
 }
 html body .geToolbar {
@@ -155,4 +167,42 @@ html body .geCommentContainer {
 	border-width: 1px;
 	box-shadow: none;
 	color: inherit;
+}
+
+.geNotification-bell * {
+  display: block;
+  margin: 0 auto;
+  background-color: #aaa !important;
+  box-shadow: 0px 0px 10px #aaa !important;
+}
+
+.geNotification-count {
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  right: 7px;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
+  font-size: 10px;
+  border-radius: 50%;
+  background-color: #ff4927;
+  color: #DEEBFF !important;
+  animation: geZoomAnim 1s 1s both;
+}
+
+.geNotifPanel .header {
+  height: 30px;
+  width: 100%;
+  background: #424242 !important;
+  color: #ccc !important;
+  font-size: 15px;
+}
+
+.geNotifPanel .notifications {
+    position: relative;
+    height: 270px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: #707070;
 }
