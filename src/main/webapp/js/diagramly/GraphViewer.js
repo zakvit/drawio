@@ -953,6 +953,7 @@ GraphViewer.prototype.addToolbar = function()
 
 	// Creates toolbar for viewer
 	var toolbar = container.ownerDocument.createElement('div');
+	toolbar.className = "viewToolbar";
 	toolbar.style.position = 'absolute';
 	toolbar.style.overflow = 'hidden';
 	toolbar.style.boxSizing = 'border-box';

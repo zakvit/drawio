@@ -805,6 +805,14 @@ App.main = function(callback, createUi)
 		Editor.initMath();
 	}
 
+	function bindEvent(element, eventName, eventHandler) {
+		if (element.addEventListener){
+			element.addEventListener(eventName, eventHandler, false);
+		} else if (element.attachEvent) {
+			element.attachEvent('on' + eventName, eventHandler);
+		}
+	}
+
 	function doLoad(bundle)
 	{
 		// Prefetches asynchronous requests so that below code runs synchronous
@@ -883,7 +891,62 @@ App.main = function(callback, createUi)
 				var ui = (createUi != null) ? createUi() : new App(new Editor(
 						urlParams['chrome'] == '0' || uiTheme == 'min',
 						null, null, null, urlParams['chrome'] != '0'));
-				
+
+                window.mxAppInstance = ui;
+                window.messageNotCalled = 1;
+                window.receivedMessages = [];
+                window.receivedSources = [];
+                window.calculatedGraphs = [];
+                window.graphMouseEventsAttached = false;
+                window.graphMouseEventsFired = [];
+                bindEvent(window, 'message', function (e) {
+                    window.messageNotCalled = 0;
+                    window.receivedMessages[window.receivedMessages.length] = e.data;
+                    if ("getGraphXml" === e.data) {
+                        window.receivedSources[window.receivedSources.length] = e.source;
+                        window.calculatedGraphs[window.calculatedGraphs.length] = mxUtils.getXml(window.mxAppInstance.editor.getGraphXml());
+                        xml = mxUtils.getXml(window.mxAppInstance.editor.getGraphXml());
+                        graph = window.mxAppInstance.editor.graph;
+                        bounds = graph.getGraphBounds();
+                        height = Math.ceil((bounds.y + bounds.height - graph.view.translate.y) / graph.view.scale) + 2;
+                        jsonObj = {"type": "getGraphXml", "location": window.location, "MESSAGE_GRAPH_XML": xml, "MESSAGE_COMPRESSED": Graph.compress(xml), "MESSAGE_URL2": "https://draw.aphinit.com/?lightbox=1#R" + Graph.compress(xml), "MESSAGE_URL": window.location.origin + "/?lightbox=1#R" +  Graph.compress(xml), "IFRAME_HEIGHT": height};
+                        e.source.postMessage(JSON.stringify(jsonObj), "*");
+                    } else if("loaded from froala" === e.data) {
+                        // remove toolbar
+                        var childrens = window.mxAppInstance.editor.graph.container.children;
+                        var itemToRemove = null;
+                        for (var i = 0; i < childrens.length; i++) {
+                            var item = childrens[i];
+                            if(item.className === "viewToolbar") {
+                                itemToRemove = item;
+                                break;
+                            }
+                        }
+                        if(itemToRemove !== null) {
+                            window.mxAppInstance.editor.graph.container.removeChild(itemToRemove);
+                        }
+                        if(!window.graphMouseEventsAttached) {
+                            bindEvent(window.mxAppInstance.editor.graph.container, "mouseenter", function() {
+                                window.graphMouseEventsFired[window.graphMouseEventsFired.length] = "mouseenter";
+                                jsonObj = {"type": "graphMouseEnter", "location": window.location};
+                                window.parent.postMessage(JSON.stringify(jsonObj), "*");
+                            });
+                            bindEvent(window.mxAppInstance.editor.graph.container, "mouseleave", function() {
+                                window.graphMouseEventsFired[window.graphMouseEventsFired.length] = "mouseleave";
+                                jsonObj = {"type": "graphMouseLeave", "location": window.location};
+                                window.parent.postMessage(JSON.stringify(jsonObj), "*");
+                            });
+                            window.graphMouseEventsAttached = true;
+                        }
+                    } else
+                        return;
+
+
+                    //window.parent.postMessage(mxUtils.getXml(window.mxAppInstance.editor.getGraphXml()), "*");
+                    //e.source.postMessage(mxUtils.getXml(window.mxAppInstance.editor.getGraphXml()), e.origin);
+                    //window.parent.postMessage(mxUtils.getXml(window.mxAppInstance.editor.getGraphXml()), e.origin);
+                });
+
 				if (window.mxscript != null)
 				{
 					// Loads dropbox for all browsers but IE8 and below (no CORS) if not disabled or if enabled and in embed mode
