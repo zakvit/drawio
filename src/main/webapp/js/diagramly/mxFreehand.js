@@ -1,14 +1,14 @@
 function mxFreehand(graph)
 {
-	//Graph must have a container
-	if (graph.container == null || graph.container.querySelector('svg') == null)
+	// Graph must have a container
+	var svgElement = (graph.view != null && graph.view.canvas != null) ? graph.view.canvas.ownerSVGElement : null;
+	
+	if (graph.container == null || svgElement == null)
 	{
 		return;
 	}
 	
 	//Code inspired by https://stackoverflow.com/questions/40324313/svg-smooth-freehand-drawing
-	var svgElement = graph.container.querySelector('svg');
-	
 	var bufferSize = mxFreehand.prototype.NORMAL_SMOOTHING;
 	var path = null;
 	var partPathes = [];
@@ -19,7 +19,7 @@ function mxFreehand(graph)
 	var autoClose = true;
 	var buffer = []; // Contains the last positions of the mouse cursor
 	var enabled = false;
-	var stopClickEnabled = false;
+	var stopClickEnabled = true
 
 	this.setClosedPath = function(isClosed)//TODO add closed settings
 	{
@@ -63,7 +63,7 @@ function mxFreehand(graph)
 	
 	var endPath = mxUtils.bind(this, function(e)
 	{
-	    if (path) 
+	    if (path)
 	    {
 	    	// Click stops drawing
 	    	var doStop = stopClickEnabled && drawPoints.length > 0 &&

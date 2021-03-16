@@ -139,7 +139,7 @@ TrelloClient.prototype.getFile = function(id, success, error, denyConvert, asLib
 						error({code: App.ERROR_TIMEOUT})
 					}), this.ui.timeout);
 					
-					this.ui.loadUrl(PROXY_URL + '?url=' + encodeURIComponent(meta.url), mxUtils.bind(this, function(data)
+					this.ui.editor.loadUrl(PROXY_URL + '?url=' + encodeURIComponent(meta.url), mxUtils.bind(this, function(data)
 					{
 						window.clearTimeout(timeoutThread);
 				    	
@@ -152,7 +152,7 @@ TrelloClient.prototype.getFile = function(id, success, error, denyConvert, asLib
 	
 							if (index > 0)
 							{
-								var xml = this.ui.extractGraphModelFromPng(data.substring(index + 1));
+								var xml = this.ui.extractGraphModelFromPng(data);
 								
 								if (xml != null && xml.length > 0)
 								{
@@ -460,9 +460,12 @@ TrelloClient.prototype.showTrelloDialog = function(showFiles, fn)
 	{
 		linkCounter++;
 		var div = document.createElement('div');
-		div.style = "width:100%;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:" + (linkCounter % 2 == 0? "#eee" : "#fff");
+		div.style = 'width:100%;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;' +
+			'padding:2px 0 2px 0;background:' + (linkCounter % 2 == 0?
+			((uiTheme == 'dark') ? '#000' : '#eee') :
+			((uiTheme == 'dark') ? '' : '#fff'));
 		var link = document.createElement('a');
-		link.setAttribute('href', 'javascript:void(0);');
+		link.style.cursor = 'pointer';
 		
 		if (preview != null)
 		{
@@ -572,7 +575,7 @@ TrelloClient.prototype.showTrelloDialog = function(showFiles, fn)
 		
 		nextPageDiv = document.createElement('a');
 		nextPageDiv.style.display = 'block';
-		nextPageDiv.setAttribute('href', 'javascript:void(0);');
+		nextPageDiv.style.cursor = 'pointer';
 		mxUtils.write(nextPageDiv, mxResources.get('more') + '...');
 		
 		var nextPage = mxUtils.bind(this, function()
