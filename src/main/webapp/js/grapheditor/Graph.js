@@ -6289,20 +6289,12 @@ mxStencilRegistry.getStencil = function(name)
 							{
 								if (mxStencilRegistry.allowEval)
 								{
-									// try to load async
-									mxUtils.get(fname, function(req) {
-										if (req != null && req.getStatus() >= 200 && req.getStatus() <= 299)
-										{
-											eval.call(window, req.getText());
-										}
-									});
+									var req = mxUtils.load(fname);
 
-									// var req = mxUtils.load(fname);
-									//
-									// if (req != null && req.getStatus() >= 200 && req.getStatus() <= 299)
-									// {
-									// 	eval.call(window, req.getText());
-									// }
+									if (req != null && req.getStatus() >= 200 && req.getStatus() <= 299)
+									{
+										eval.call(window, req.getText());
+									}
 								}
 							}
 							catch (e)
@@ -6367,9 +6359,6 @@ mxStencilRegistry.getBasenameForStencil = function(name)
 mxStencilRegistry.loadStencilSet = function(stencilFile, postStencilLoad, force, async)
 {
 	force = (force != null) ? force : false;
-
-	// try to load async in every time
-	async = true;
 
 	// Uses additional cache for detecting previous load attempts
 	var xmlDoc = mxStencilRegistry.packages[stencilFile];
